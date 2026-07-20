@@ -1,0 +1,40 @@
+﻿@model IEnumerable<InventoryManagement.Models.Purchase>
+
+@{
+    ViewData["Title"] = "Purchase Shipments";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Incoming Shipment Logs</h2>
+    <a asp-action="Create" class="btn btn-success">+ Record New Purchase Entry</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Receipt ID</th>
+            <th>Product Name</th>
+            <th>Received Quantity</th>
+            <th>Log Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>REC-@item.PurchaseId</td>
+                <td>@item.Product?.ProductName</td>
+                <td class="text-success"><strong>+@item.Quantity</strong></td>
+                <td>@item.PurchaseDate.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>

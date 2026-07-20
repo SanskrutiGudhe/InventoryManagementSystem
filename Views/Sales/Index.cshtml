@@ -1,0 +1,40 @@
+﻿@model IEnumerable<InventoryManagement.Models.Sales>
+
+@{
+    ViewData["Title"] = "Sales Orders";
+}
+
+<div class="d-flex justify-content-between align-items-center mb-3">
+    <h2>Outward Sales Log</h2>
+    <a asp-action="Create" class="btn btn-danger">+ Record New Sales Invoice</a>
+</div>
+
+@if (TempData["Success"] != null)
+{
+    <div class="alert alert-success alert-dismissible fade show" role="alert">
+        @TempData["Success"]
+        <button type="button" class="btn-close" data-bs-dismiss="alert"></button>
+    </div>
+}
+
+<table class="table table-bordered table-striped">
+    <thead class="table-dark">
+        <tr>
+            <th>Invoice ID</th>
+            <th>Product Name</th>
+            <th>Sold Quantity</th>
+            <th>Transaction Date</th>
+        </tr>
+    </thead>
+    <tbody>
+        @foreach (var item in Model)
+        {
+            <tr>
+                <td>INV-@item.SalesId</td>
+                <td>@item.Product?.ProductName</td>
+                <td class="text-danger"><strong>-@item.Quantity</strong></td>
+                <td>@item.SalesDate.ToShortDateString()</td>
+            </tr>
+        }
+    </tbody>
+</table>
