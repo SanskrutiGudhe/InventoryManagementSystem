@@ -20,18 +20,77 @@ namespace InventoryManagement.Controllers
             _supplierRepo = supplierRepo;
         }
 
-        // GET: Product (With Search)
-        public async Task<IActionResult> Index(string searchString)
+        // GET: Product (With Search, Sorting & Pagination)
+        public async Task<IActionResult> Index(string searchString, string sortOrder, int? pageNumber)
         {
-            var products = await _productRepo.GetAllWithIncludesAsync(p => p.Category!, p => p.Supplier!);
+            // Store states inside ViewData for our UI HTML Helpers to toggle
+            ViewData["CurrentSort"] = sortOrder;
+            ViewData["NameSortParm"] = string.IsNullOrEmpty(sortOrder) ? "name_desc" : "";
+            ViewData["PriceSortParm"] = sortOrder == "Price" ? "price_desc" : "Price";
+            ViewData["StockSortParm"] = sortOrder == "Stock" ? "stock_desc" : "Stock";
+            ViewData["CurrentFilter"] = searchString;
 
+            var productsList = await _productRepo.GetAllWithIncludesAsync(p => p.Category!, p => p.Supplier!);
+            var products = productsList.AsQueryable();
+
+            // Server-side Filtering
             if (!string.IsNullOrEmpty(searchString))
             {
                 products = products.Where(p => p.ProductName.Contains(searchString, StringComparison.OrdinalIgnoreCase));
-                ViewData["CurrentFilter"] = searchString;
             }
 
-            return View(products);
+            // Server-side Sorting
+            switch (sortOrder)
+            {
+                case "name_desc":
+                    products = products.OrderByDescending(p => p.ProductName);
+                    break;
+
+                case "Price":
+                    products = products.OrderBy(p => p.Price);
+                    break;
+
+                case "price_desc":
+                    products = products.OrderByDescending(p => p.Price);
+                    break;
+
+                case "Stock":
+                    products = products.OrderBy(p => p.Stock);
+                    break;
+
+                case "stock_desc":
+                    products = products.OrderByDescending(p => p.Stock);
+                    break;
+
+                default:
+                    products = products.OrderBy(p => p.ProductName);
+                    break;
+            }
+
+            // Pagination
+            int pageSize = 5;
+            int pageIndex = pageNumber ?? 1;
+
+            int totalItems = products.Count();
+            int totalPages = (int)Math.Ceiling(totalItems / (double)pageSize);
+
+            if (pageIndex < 1)
+                pageIndex = 1;
+
+            if (pageIndex > totalPages && totalPages > 0)
+                pageIndex = totalPages;
+
+            var pagedProducts = products
+                .Skip((pageIndex - 1) * pageSize)
+                .Take(pageSize)
+                .ToList();
+
+            ViewData["PageIndex"] = pageIndex;
+            ViewData["TotalPages"] = totalPages;
+            ViewData["HasPreviousPage"] = pageIndex > 1;
+            ViewData["HasNextPage"] = pageIndex < totalPages;
+
+            return View(pagedProducts);
         }
 
         // GET: Product/Create
