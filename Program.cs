@@ -16,11 +16,19 @@ builder.Services.AddControllersWithViews();
 var app = builder.Build();
 
 // 3. Setup HTTP Pipeline & Exception Handlers
+// File Path: Program.cs (Pipeline Configuration Section)
 if (!app.Environment.IsDevelopment())
-    {
-        app.UseExceptionHandler("/Home/Error");
-        app.UseHsts();
-    }
+{
+    // Catches uncaught runtime errors and redirects users to a friendly error page
+    app.UseExceptionHandler("/Home/Error");
+    app.UseHsts();
+}
+else
+{
+    // Detailed page helper during developer phases
+    app.UseDeveloperExceptionPage();
+}
+
 
 app.UseHttpsRedirection();
 app.UseStaticFiles();
